@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+    <style>
+        html,body{
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f8f8;
+        }
+        .loading{
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+        }
+        .header{
+            width: 500px;
+            height: 100px;
+            border: 1px solid #ccc;
+            min-height: 30px;
+            margin-bottom: 10px;
+            overflow-y: scroll;
+            word-break:break-all;
+        }
+        .text{
+            width: 500px;
+            height: 400px;
+            border: 1px solid #ccc;
+            overflow-y: scroll;
+            word-break:break-all;
+        }
+        .line{
+            margin: 15px 0px;
+            outline: 0;
+            border-color: #e6e6e6;
+        }
+        .line label{
+            width: 120px;
+            text-align: right;
+            display: inline-block;
+        }
+        .line input{
+            width: 400px;
+            line-height: 30px;
+            display: inline-block;
+        }
+        .line>div{
+            display: inline-block;
+        }
+        .content{
+            float: left;
+        }
+        .res{
+            float: right;
+            margin-right: 15px;
+        }
+        .box{
+            background-color: #fff;
+            overflow: hidden;
+            margin: 0px auto;
+            width: 1300px;
+        }
+        .time,.average{
+            max-width: 500px;
+        }
+        button{
+            width: 60%;
+            margin-left: 30%;
+            display: inline-block;
+            height: 38px;
+            line-height: 38px;
+            padding: 0 18px;
+            background-color: #009688;
+            color: #fff;
+            white-space: nowrap;
+            text-align: center;
+            font-size: 14px;
+            border: none;
+            border-radius: 2px;
+            cursor: pointer;
+            outline: 0;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading"></div>
+    <div class="box">
+        <div class="content">
+            <div class="line">
+                <label for="">协议：</label>
+                <input type="text" name="protocol" placeholder="请输入协议" value="https">
+            </div>
+            <div class="line">
+                <label for="">ip：</label>
+                <input type="text" name="hostname" placeholder="请输入ip" value="www.baidu.com">
+            </div>
+            <div class="line">
+                <label for="">端口号：</label>
+                <input type="text" name="port" placeholder="请输入端口号" value="443">
+            </div>
+            <div class="line">
+                <label for="">路径：</label>
+                <input type="text" name="path" placeholder="请输入路径" value="/">
+            </div>
+            <div class="line">
+                <label for="">方法：</label>
+                <input type="text" name="method" placeholder="请输入方法" value="get">
+            </div>
+            <div class="line">
+                <label for="">cookie：</label>
+                <input type="text" name="cookie" placeholder="请输入cookie" value="">
+            </div>
+            <div class="line">
+                <label for="">请求次数：</label>
+                <input type="number" name="num" value="1">
+            </div>
+            <div class="line">
+                <label for="">参数：</label>
+                <textarea name="postData" cols="54" rows="16"></textarea>
+            </div>
+            
+            <div class="line">
+                <button type="button" class="submit">提交</button>
+            </div>
+        </div>
+        
+        <div class="res">
+            <div class="line">
+                <label for="">平均响应时间：</label>
+                <div class="average"></div>
+            </div>
+            <div class="line">
+                <label for="">响应时间：</label>
+                <div class="time"></div>
+            </div>
+            <div class="line">
+                <label for="">响应头：</label>
+                <div class="header"></div>
+            </div>
+            <div class="line">
+                <label for="">响应主体：</label>
+                <div class="text"></div>
+            </div>
+        </div>
+    </div>
+    
+    
+
+    <script>
+        var ajax={
+            //添加url传送信息
+            addUrl: function (url,obj){
+                //如果省略url，则为post请求，令obj为url，令url为null
+                if(arguments.length==1){
+                    obj=url;
+                    url=null;
+                }
+                //url不为空(get请求: 设置url信息)
+                if(!!url){
+                    for(var k in obj){
+                        url += (url.indexOf("?")==-1 ? "?" : "&");
+                        url+=encodeURIComponent(k)+ "=" +encodeURIComponent(obj[k]);
+                    }
+                }else{
+                    //post请求(设置data信息)
+                    url="";
+                    for(var k in obj){
+                        url+=encodeURIComponent(k)+ "=" +encodeURIComponent(obj[k]);
+                        url+="&";
+                    }
+                    //删除最后一个&
+                    var arr=url.split("");
+                    arr.pop();
+                    url=arr.join("");
+                }
+                //返回拼接好的信息
+                return url;
+            },
+            get: function (url,data,fn,ojson){
+                this.xhr=new XMLHttpRequest();
+                //省略data时,即不发送数据
+                if(typeof data =="function"){
+                    ojson=fn;
+                    fn=data;
+                    data={};
+                }
+                //合并url和data信息
+                url=this.addUrl(url,data)
+                //是否异步发送
+                this.xhr.open("get",url,true);
+                this.xhr.send(null);
+                //当请求完成之后调用回调函数返回数据
+                this.success(fn,ojson);
+                //链式编程
+                return this;
+            },
+            post: function (url,data,fn,ojson){
+                this.xhr=new XMLHttpRequest();
+                //省略data时,即不发送数据
+                if(typeof data =="function"){
+                    ojson=fn;
+                    fn=data;
+                    data={};
+                }
+                //合并data信息
+                data=this.addUrl(data);
+                //是否异步发送
+                this.xhr.open("post",url,true);
+                this.xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                this.xhr.send(data);
+
+                //当请求完成之后调用回调函数返回数据
+                this.success(fn,ojson);
+                //链式编程
+                return this;
+            },
+            //字符串转换json
+            json: function (str){
+                return (new Function("return " + str))(); 
+            },
+            success: function (fn,ojson){
+                //当请求完成之后调用回调函数返回数据
+                var self=this;
+                this.xhr.onreadystatechange=function (){
+                    var odata;
+                    if(self.xhr.readyState == 4){
+                        if((self.xhr.status>=200 && self.xhr.status<300) || self.xhr.status == 304){
+                            odata=self.xhr.responseText;
+                            //若为json则转化json格式
+                            if(ojson==="json"){
+                                odata=self.json(odata);
+                            }
+                            fn(odata);
+                        }else{
+                            odata="request was unsuccessful: "+self.xhr.status;
+                            fn(odata);
+                        }
+                    }
+                }
+            },
+            //取消异步请求
+            cancel: function (){
+                this.xhr.abort();
+                return this;
+            }
+        }
+
+        document.querySelector(".submit").onclick=function() {
+            var inp=document.querySelectorAll("input");
+            var obj={};
+            for(var i=0;i<inp.length;i++){
+                obj[inp[i].name]=inp[i].value || ""
+            }
+            obj["postData"]=document.querySelector("textarea").value || "{}";
+
+            document.querySelector(".loading").style="display: block";
+            ajax.post("/send",obj,function(data) {
+                document.querySelector(".loading").style="display: none";
+                data=JSON.parse(data);
+                if(data.code===0){
+                    document.querySelector(".average").innerText=data.average;
+                    document.querySelector(".time").innerText=data.time.join("，");
+                    document.querySelector(".header").innerText=data.data[0].headers;
+                    document.querySelector(".text").innerText=data.data[0].body;
+                }else{
+                    alert(data.msg)
+                }
+            })
+        }
+        
+    </script>
+</body>
+</html>
