@@ -7,6 +7,9 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
     <style>
+        html{
+            touch-action:pan-y;
+        }
             .urp-scroll{
                 width: 300px;
                 height: 400px;
@@ -41,7 +44,7 @@
             </div>
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script>
-        function ScrollBar(options) {
+    function ScrollBar(options) {
         this.options=options;     // 获取传入的数据
         this.contentEL=$(options.el);
         this.wrapEl="";
@@ -119,8 +122,8 @@
                 moveType="touchmove";
                 endType="touchend";
             }
-
-            $(document).on(moveType+".move", this.move.bind(this,type));
+            var scrollFn = this.throttle(this.move.bind(this,type));
+            $(document).on(moveType+".move", scrollFn);
             $(document).on(endType+".up", function() {
                 $(document).off(".move").off(".up");
             })
@@ -132,7 +135,7 @@
             }else if(type==="touch"){
                 this.current=e.originalEvent.touches[0].clientY-this.y-this.wrapEl.offset().top;
             }else{
-                this.current=this.current-(e.originalEvent.touches[0].pageY-this.pageY)/20;
+                this.current=this.current-(e.originalEvent.touches[0].pageY-this.pageY)/10;
             }
             this.scrollFn();
             window.getSelection ? window.getSelection().removeAllRanges() : document.selection.empty();
@@ -160,12 +163,35 @@
                 that.current=value>0 ? that.current-15 : that.current+15;
                 that.scrollFn();
             })
-            $(window).on("resize", function() {
+            var scrollFn = this.throttle(function() {
                 that.countHeight();
-            })
+            });
+            $(window).on("resize", scrollFn);
+        },
+        // 节流函数
+        throttle: function (callback, time) {
+            var timer = null;
+            var firstTime = true;
+            return function () {
+                var args = arguments;
+                var _self = this;
+                if (firstTime) {
+                    callback.apply(_self, args);
+                    return firstTime = false;
+                }
+                if (timer) {
+                    return false;
+                }
+                timer = setTimeout(function () {
+                    clearTimeout(timer);
+                    timer = null;
+                    callback.apply(_self, args);
+                }, time || 50)
+    
+            }
         }
-    }
-    new ScrollBar({
+    }    
+        new ScrollBar({
                 el: ".scroll",
                 color: "#888",
                 width: "7px"
