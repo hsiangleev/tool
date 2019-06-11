@@ -138,7 +138,7 @@
                 that.current=value>0 ? that.current-15 : that.current+15;
                 that.scrollFn();
             })
-            window.on("resize", function() {
+            $(window).on("resize", function() {
                 that.countHeight();
             })
         }
