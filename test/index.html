@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://cdn.bootcss.com/weui/1.1.3/style/weui.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/jquery-weui/1.2.1/css/jquery-weui.min.css">
+</head>
+<body>
+    <div class="weui-cells weui-cells__form" id="loginDiv">
+        <form id="bindingform">
+            <div class="weui-cell">
+                <div class="weui-cell__hd">
+                    <label class="weui-label">工号/学号</label>
+                </div>
+                <div class="weui_cell_bd weui_cell_primary">
+                    <input name="username" class="weui-input" type="text" placeholder="请输入工号/学号" />
+                </div>
+            </div>
+            <div class="weui-cell">
+                <div class="weui-cell__hd">
+                    <label class="weui-label">密&#12288;&#12288;码</label>
+                </div>
+                <div class="weui-cell__bd weui-cell__primary">
+                    <input name="pwd" class="weui-input" type="password" autocomplete="off" placeholder="请输入财务系统密码" />
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="weui-cells__tips">绑定提示：密码是财务系统密码，与数字化校园门户密码可能不一致。</div>
+    <div class="page__bd page__bd_spacing">
+        <a class="weui-btn weui-btn_primary" href="javascript:" id="btn-login">登录</a>
+        <br />
+    </div>
+    <div style="text-align: right; margin-right: 20px;">
+        <a href="/Account/SearchEMail/">忘记密码</a>
+    </div>
+
+    <script src="https://cdn.bootcss.com/jquery/1.11.0/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/jquery-weui/1.2.1/js/jquery-weui.min.js"></script>
+    <script>
+        $(document).keydown(function (e) {
+            if (e.keyCode == 13) {
+                login();
+            }
+        });
+        $(document).on("click", "#btn-login", function () {
+            login();
+        });
+        function login() {
+            
+        }
+    </script>
+</body>
+</html>
