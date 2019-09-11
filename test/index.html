@@ -15,6 +15,10 @@
             display: inline-block;
             position: relative;
         }
+        input::-ms-clear, 
+        input::-ms-reveal{
+            display: none;
+        }
         .urpMaxLen-sub{
             position: absolute;
             right: 0px;
@@ -27,7 +31,6 @@
 </head>
 
 <body>
-    <input type="text" class="aa">
     <input type="text" class="urpMaxLen" urp-max-length="10">
     <input type="text" class="urpMaxLen" urp-max-length="10">
     <script src="jquery.js"></script>
@@ -40,22 +43,42 @@
             var subDom=$(item).next(".urpMaxLen-sub");
             var subWidth=subDom.width();
             $(item).css("padding-right",subWidth+5)
-            $(item).on("input", function() {
-                var val=$(this).val();
+
+            var f=function(self,type) {
+                var val=$(self).val();
+                if(type==="keydown"){
+                    val=val.substring(0,val.length-1)
+                }
                 var currentLen=val.length;
                 if(currentLen>=maxLength){
-                    $(this).val(val.substring(0,maxLength))
+                    $(self).val(val.substring(0,maxLength))
                     currentLen=maxLength;
                 }
                 subDom.text(currentLen+"/"+maxLength)
+            }
+
+            var writeCn=false;           // 是否是在输入中文
+            var keyDownPress=false;     // 防止同时执行keydown和input事件
+            $(item).on("compositionstart",function() {
+                writeCn=true;
+            }).on("compositionend",function() {
+                f(this);
+                writeCn=false;
+            }).on("input", function() {
+                if(!writeCn && !keyDownPress) {
+                    f(this);
+                    keyDownPress=false;
+                }
+            }).on("keydown",function() {
+                // ie9删除不触发input事件
+                var keyCode=event.keyCode;
+                if(keyCode===8 && !writeCn) {
+                    f(this, "keydown");
+                    keyDownPress=true;
+                }else{
+                    keyDownPress=false;
+                }
             })
-        })
-        $(".aa").on("compositionstart",function() {
-            alert(11)
-        }).on("compositionupdate",function() {
-            alert(22)
-        }).on("compositionend",function() {
-            alert(66)
         })
     </script>
 </body>
