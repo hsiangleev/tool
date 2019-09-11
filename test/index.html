@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        input{
+            height: 30px;
+            line-height: 30px;
+        }
+        .urpMaxLen-wrap{
+            display: inline-block;
+            position: relative;
+        }
+        .urpMaxLen-sub{
+            position: absolute;
+            right: 0px;
+            top: 50%;
+            font-size: 12px;
+            color: #888;
+            transform: translateY(-50%);
+        }
+    </style>
+</head>
+
+<body>
+    <input type="text" class="aa">
+    <input type="text" class="urpMaxLen" urp-max-length="10">
+    <input type="text" class="urpMaxLen" urp-max-length="10">
+    <script src="jquery.js"></script>
+    <script>
+        $("input.urpMaxLen").each(function(index, item) {
+            var maxLength=$(item).attr("urp-max-length")
+            var value=$(item).val();
+            var currentLen=value.length;
+            $(item).wrap('<div class="urpMaxLen-wrap"></div>').after('<span class="urpMaxLen-sub">'+currentLen+'/'+maxLength+'</span>')
+            var subDom=$(item).next(".urpMaxLen-sub");
+            var subWidth=subDom.width();
+            $(item).css("padding-right",subWidth+5)
+            $(item).on("input", function() {
+                var val=$(this).val();
+                var currentLen=val.length;
+                if(currentLen>=maxLength){
+                    $(this).val(val.substring(0,maxLength))
+                    currentLen=maxLength;
+                }
+                subDom.text(currentLen+"/"+maxLength)
+            })
+        })
+        $(".aa").on("compositionstart",function() {
+            alert(11)
+        }).on("compositionupdate",function() {
+            alert(22)
+        }).on("compositionend",function() {
+            alert(66)
+        })
+    </script>
+</body>
+
+</html>
