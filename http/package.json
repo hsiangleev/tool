@@ -1,0 +1,10 @@
+{
+  "devDependencies": {
+    "axios": "^0.19.2",
+    "fs.promised": "^3.0.0",
+    "koa": "^2.13.0",
+    "koa-bodyparser": "^4.3.0",
+    "koa-route": "^3.2.0",
+    "koa-static": "^5.0.0"
+  }
+}

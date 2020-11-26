@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+    <style>
+        html,body{
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f8f8;
+        }
+        .loading{
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 100;
+        }
+        .header{
+            width: 350px;
+            height: 100px;
+            border: 1px solid #ccc;
+            min-height: 30px;
+            margin-bottom: 10px;
+            overflow-y: scroll;
+            word-break:break-all;
+        }
+        .text{
+            width: 350px;
+            height: 400px;
+            border: 1px solid #ccc;
+            overflow-y: scroll;
+            word-break:break-all;
+        }
+        .line{
+            margin: 15px 0px;
+            outline: 0;
+            border-color: #e6e6e6;
+        }
+        .line label{
+            width: 120px;
+            text-align: right;
+            display: inline-block;
+        }
+        .line input:not([type=radio]){
+            width: 350px;
+            line-height: 30px;
+            display: inline-block;
+        }
+        .line>div{
+            display: inline-block;
+        }
+        .content{
+            float: left;
+        }
+        .res{
+            float: right;
+            margin-right: 15px;
+        }
+        textarea{
+            width: 350px;
+        }
+        .box{
+            background-color: #fff;
+            overflow: hidden;
+            width: 1000px;
+            height: 600px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        button{
+            width: 60%;
+            margin-left: 30%;
+            display: inline-block;
+            height: 38px;
+            line-height: 38px;
+            padding: 0 18px;
+            background-color: #009688;
+            color: #fff;
+            white-space: nowrap;
+            text-align: center;
+            font-size: 14px;
+            border: none;
+            border-radius: 2px;
+            cursor: pointer;
+            outline: 0;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading"></div>
+    <form class="box">
+        <div class="content">
+            <div class="line">
+                <label for="">地址：</label>
+                <input type="text" name="hostname" placeholder="请输入地址" value="localhost:3000">
+            </div>
+            <div class="line">
+                <label for="">方法：</label>
+                <input type="radio" name="method" value="get" checked>get
+                <input type="radio" name="method" value="post">post
+            </div>
+            <div class="line">
+                <label for="">cookie：</label>
+                <input type="text" name="cookie" placeholder="请输入cookie" value="">
+            </div>
+            <div class="line">
+                <label for="">headers：</label>
+                <textarea name="headers" cols="54" rows="16" style="height: 110px;" placeholder="换行隔开数据"></textarea>
+            </div>
+            <div class="line">
+                <label for="">参数：</label>
+                <textarea name="postData" cols="54" rows="16" placeholder='换行隔开数据，例如 a: "aaa"'></textarea>
+            </div>
+            
+            <div class="line">
+                <button type="button" class="submit">提交</button>
+            </div>
+        </div>
+        
+        <div class="res">
+            <!-- <div class="line">
+                <label for="">响应时间：</label>
+                <div class="time"></div>
+            </div> -->
+            <div class="line">
+                <label for="">响应头：</label>
+                <div class="header"></div>
+            </div>
+            <div class="line">
+                <label for="">响应主体：</label>
+                <div class="text"></div>
+            </div>
+        </div>
+    </div>
+    
+    
+    <script src="/node_modules/_axios@0.19.2@axios/dist/axios.min.js"></script>
+    <script>
+        var $ = el => document.querySelector(el);
+        $(".submit").onclick = function() {
+            var inp=document.querySelectorAll("input[name],textarea[name]");
+            var obj={};
+            for(var i=0;i<inp.length;i++){
+                if(inp[i].getAttribute("type") === "radio"){
+                    if(inp[i].checked){
+                        obj[inp[i].name] = inp[i].value
+                    }
+                }else{
+                    obj[inp[i].name]=inp[i].value || ""
+                }
+            }
+            var f = (data)=>{
+                var s = {};
+                if(!data) return s;
+                data.split("\n").forEach(v=>{
+                    let k = v.split(":");
+                    let t = k[1].trim()
+                    let t0 = k[0].replace(/[\"|\']/g, "")
+                    // 判断字符串
+                    if(new RegExp(/^[\"\'][\w\W]*[\"\']$/).test(t)){
+                        s[t0] = t.replace(/[\'\"]/g, "");
+                    }else if(isNaN(t)){
+                        s[t0] = t.toLowerCase() === "true" ? true : false; // 布尔
+                    }else{
+                        s[t0] = Number(t.replace(/[\'\"]/g, "")); // 数字
+                    }
+                })
+                return s;
+            }
+            obj.postData = obj.postData.trim();
+            obj.postData = (obj.postData[0]==="{" && obj.postData[obj.postData.length-1]==="}") ? JSON.parse(obj.postData) : f(obj.postData);
+            obj.headers = f(obj.headers);
+            $(".loading").style="display: block";
+            axios({
+                method: 'post',
+                url: '/send',
+                data: obj
+            })
+            .then(function (data) {
+                var d = data.data;
+                $(".loading").style="display: none";
+                if(d.err) {
+                    alert(d.err);
+                    return;
+                }
+                $(".header").innerText = JSON.stringify(d.h);
+                $(".text").innerText = typeof d.d === "string" ? d.d : JSON.stringify(d.d);
+            })
+            .catch(function (error) {
+                $(".loading").style="display: none";
+                console.log(error);
+            });
+        }
+        
+    </script>
+</body>
+</html>

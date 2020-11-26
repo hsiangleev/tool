@@ -2,3 +2,4 @@ Puppeteer/
 cypress/
 jmeter/
 .vscode/
+http/node_modules/
